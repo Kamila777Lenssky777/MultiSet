@@ -1,0 +1,282 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package tests.ru.ifmo.ctddev.romashchenko.multisets;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import sourse.ru.ifmo.ctddev.romashchenko.multisets.Bag;
+import static org.junit.Assert.*;
+
+/**
+ *
+ * @author I
+ */
+public class BagTest {
+
+    public static class Entry {
+
+        Integer number = 0;
+        String name = "zero line";
+
+        public Entry() {
+        }
+
+        public Entry(Integer number, String name) {
+            this.number = number;
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{" + "number=" + number + ", name=" + name + '}';
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(this.number);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Entry) {
+                final Entry other = (Entry) obj;
+                return other.number == this.number && other.name.equals(this.name);
+            }
+            return false;
+        }
+    }
+    private static Bag<Entry> bag = new Bag<>();
+    private static Bag<Entry> exampleBag = new Bag<>();
+
+    static {
+        for (int i = 0; i < 10; i++) {
+            for (int k = 0; k < i; k++) {
+                exampleBag.add(new Entry(k, "line " + i));
+            }
+        }
+    }
+
+    @After
+    public void tearDown() {
+        bag.clear();
+        System.out.println("----------------------------------");
+    }
+
+    /**
+     * Test of size method, of class Bag after adding one element
+     */
+    @Test
+    public void testSizeAfterAddingOneElement() {
+        System.out.println("testSizeAfterAddingOneElement");
+        int expResult = bag.size();
+        bag.add(new Entry(1, "one"));
+        expResult++;
+        int result = bag.size();
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of size method, of class Bag after adding several elements
+     */
+    @Test
+    public void testSizeAfterAddingSeveralElement() {
+        System.out.println("testSizeAfterAddingSeveralElement");
+        int expResult = bag.size();
+        bag.add(new Entry(1, "one"));
+        bag.add(new Entry(1, "one"));
+        bag.add(new Entry(1, "two"));
+        bag.add(new Entry(3, "three"));
+        expResult += 4;
+        int result = bag.size();
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of isEmpty method, of class Bag. isEmpty <=> size==0
+     */
+    @Test
+    public void testIsEmpty() {
+        System.out.println("testIsEmpty");
+        assertTrue((bag.size() == 0) == bag.isEmpty());
+    }
+
+    /**
+     * Test of contains method after adding {e1, e1 :
+     * hashCode(e1)==hashCode(e2)}
+     */
+    @Test
+    public void testContains() {
+        System.out.println("testContains");
+        Entry e1 = new Entry(1, " one");
+        Entry e2 = new Entry(1, "two");
+        bag.add(e1);
+        bag.add(e2);
+        assertTrue(bag.contains(e1) && bag.contains(e2));
+    }
+
+    /**
+     * Test of iterator method, of class Bag.
+     */
+    @Test
+    public void testIterator() {
+        System.out.println("testIterator");
+        bag = exampleBag;
+        Iterator result = bag.iterator();
+        assertTrue(result != null);
+    }
+
+    @Test(expected =ConcurrentModificationException.class)
+    public void testIteratorOnModificationException() {
+        System.out.println("testIteratorOnModificationException");
+        Iterator<Entry> iterator = bag.iterator();
+        bag.add(new Entry());
+        iterator.remove();
+    }
+
+    /**
+     * Test of toArray method, of class Bag.
+     */
+    @Test
+    public void testToArray_0args() {
+        System.out.println("toArray_0args");
+        Bag instance = new Bag();
+        Entry [] expResult = new Entry[]{new Entry(), new Entry(1, "one"), new Entry(1, "one"), new Entry(1, "two"), new Entry(2, "two")};
+        List<Entry> expList = Arrays.asList(expResult);
+        bag.addAll(expList);
+        Object[] result =  bag.toArray();
+        List<Object> resList = Arrays.asList(result);
+        assertTrue(expList.containsAll(resList) && resList.containsAll(expList));
+    }
+
+    /**
+     * Test of toArray method, of class Bag.
+     */
+    @Test
+    public void testToArray_GenericType() {
+       System.out.println("toArray_GenericType");
+        Bag instance = new Bag();
+        Entry [] expResult = new Entry[]{new Entry(), new Entry(1, "one"), new Entry(1, "one"), new Entry(1, "two"), new Entry(2, "two")};
+        List<Entry> expList = Arrays.asList(expResult);
+        bag.addAll(expList);
+        Entry[] result = new Entry[]{};
+        result =  bag.toArray(result);
+        List<Entry> resList = Arrays.asList(result);
+        assertTrue(expList.containsAll(resList) && resList.containsAll(expList));
+    }
+
+    /**
+     * Test of remove method, of class Bag.
+     */
+    @Test
+    public void testRemove() {
+        System.out.println("testRemove");
+        Entry e1 = new Entry(1, "one");
+        Entry e2 = new Entry(1, "two");
+        bag.add(e1);
+        bag.add(e2);
+        bag.remove(e1);
+        assertTrue(!bag.contains(e1) && bag.contains(e2));
+    }
+
+    /**
+     * Test of containsAll method, of class Bag.
+     */
+    @Test
+    public void testContainsAll() {
+        System.out.println("testContainsAll");
+        bag.addAll(exampleBag);
+        bag.add(new Entry());
+        bag.add(new Entry(555, "line 555"));
+        boolean result = bag.containsAll(exampleBag);
+        assertTrue(result);
+    }
+
+    /**
+     * Test of addAll method, of class Bag after adding a list of entries
+     */
+    @Test
+    public void testAddAll() {
+        System.out.println("testAddAll");
+        int expResult = bag.size();
+        List<Entry> list = new ArrayList<>();
+        list.add(new Entry(1, "one"));
+        list.add(new Entry(1, "one"));
+        list.add(new Entry(1, "two"));
+        list.add(new Entry(3, "three"));
+        bag.addAll(list);
+        expResult += 4;
+        int result = bag.size();
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of removeAll method, of class Bag.
+     */
+    @Test
+    public void testRemoveAll() {
+        System.out.println("testRemoveAll");
+        Collection<Entry> c = Arrays.asList(new Entry(1, "one"), new Entry(1, "two"), new Entry(2, "two"));
+        bag.addAll(c);
+        bag.removeAll(c);
+        assertTrue(bag.isEmpty());
+    }
+
+    /**
+     * Test of retainAll method, of class Bag. 
+     * bag = {Entry{1,"one}, Entry{2, "two}, Entry{3, "three"}} 
+     * col = {Entry{1,"one}, Entry{2, "two}, Entry{1, "two" }} 
+     * bag.retrain(c) ->  bag = {Entry{1,"one}, Entry{2, "two}}
+     */
+    @Test
+    public void testRetainAll() {
+        System.out.println("testRetainAll");
+        Entry e11 = new Entry(1, "one");
+        Entry e22 =   new Entry(2, "two");
+        Entry e33 = new Entry(3, "three");
+        Entry e12 = new Entry(1, "two");
+        Collection<Entry> c = Arrays.asList(e11,e22, e33);
+        bag.addAll(c);
+        List<Entry> col = Arrays.asList(e11, e12, e22);
+        bag.retainAll(col);
+        assertTrue(bag.contains(e11) && bag.contains(e22) && bag.size()==2);
+    }
+
+    /**
+     * Test of retainAll method, of class Bag. bag = {...} c = null
+     * bag.retrain(c) = null
+     */
+    @Test
+    public void testRetainAllIfNull() {
+        System.out.println("testRetainAllIfNull");
+        bag = exampleBag;
+        bag.retainAll(null);
+        assertTrue(bag.isEmpty());
+    }
+
+    /**
+     * Test of clear method, of class Bag.
+     */
+    @Test
+    public void testClear() {
+        System.out.println("testClear");
+        Entry e = new Entry(1, " PRESENT");
+        for (int i = 0; i < 5; i++) {
+            bag.add(e);
+        }
+        bag.clear();
+        assertTrue(bag.size() == 0);
+    }
+}
