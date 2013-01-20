@@ -7,6 +7,7 @@ package tests.ru.ifmo.ctddev.romashchenko.multisets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -58,10 +59,12 @@ public class BagTest {
             return false;
         }
     }
-    private static Bag<Entry> bag = new Bag<>();
+    private static Bag<Entry> bag;
     private static Bag<Entry> exampleBag = new Bag<>();
 
-    static {
+    @BeforeClass
+    public static void init() {
+        System.out.println("before class");
         for (int i = 0; i < 10; i++) {
             for (int k = 0; k < i; k++) {
                 exampleBag.add(new Entry(k, "line " + i));
@@ -69,9 +72,9 @@ public class BagTest {
         }
     }
 
-    @After
-    public void tearDown() {
-        bag.clear();
+    @Before
+    public void tearUp() {
+        bag = new Bag<>();
         System.out.println("----------------------------------");
     }
 
@@ -110,7 +113,10 @@ public class BagTest {
     @Test
     public void testIsEmpty() {
         System.out.println("testIsEmpty");
-        assertTrue((bag.size() == 0) == bag.isEmpty());
+        boolean result = ((bag.size() == 0) == bag.isEmpty());
+        bag.add(new Entry());
+        result &= ((bag.size() == 0) == bag.isEmpty());
+        assertTrue(result);
     }
 
     /**
@@ -127,6 +133,13 @@ public class BagTest {
         assertTrue(bag.contains(e1) && bag.contains(e2));
     }
 
+    @Test
+    public void testIfNotContains() {
+        System.out.println("testIfNotContains");
+        bag = exampleBag;
+        assertFalse(bag.contains(new Entry(33, "33")));
+    }
+
     /**
      * Test of iterator method, of class Bag.
      */
@@ -138,12 +151,13 @@ public class BagTest {
         assertTrue(result != null);
     }
 
-    @Test(expected =ConcurrentModificationException.class)
+    @Test(expected = ConcurrentModificationException.class)
     public void testIteratorOnModificationException() {
         System.out.println("testIteratorOnModificationException");
+        bag = exampleBag;
         Iterator<Entry> iterator = bag.iterator();
         bag.add(new Entry());
-        iterator.remove();
+        iterator.next();
     }
 
     /**
@@ -153,10 +167,10 @@ public class BagTest {
     public void testToArray_0args() {
         System.out.println("toArray_0args");
         Bag instance = new Bag();
-        Entry [] expResult = new Entry[]{new Entry(), new Entry(1, "one"), new Entry(1, "one"), new Entry(1, "two"), new Entry(2, "two")};
+        Entry[] expResult = new Entry[]{new Entry(), new Entry(1, "one"), new Entry(1, "one"), new Entry(1, "two"), new Entry(2, "two")};
         List<Entry> expList = Arrays.asList(expResult);
         bag.addAll(expList);
-        Object[] result =  bag.toArray();
+        Object[] result = bag.toArray();
         List<Object> resList = Arrays.asList(result);
         assertTrue(expList.containsAll(resList) && resList.containsAll(expList));
     }
@@ -166,13 +180,13 @@ public class BagTest {
      */
     @Test
     public void testToArray_GenericType() {
-       System.out.println("toArray_GenericType");
+        System.out.println("toArray_GenericType");
         Bag instance = new Bag();
-        Entry [] expResult = new Entry[]{new Entry(), new Entry(1, "one"), new Entry(1, "one"), new Entry(1, "two"), new Entry(2, "two")};
+        Entry[] expResult = new Entry[]{new Entry(), new Entry(1, "one"), new Entry(1, "one"), new Entry(1, "two"), new Entry(2, "two")};
         List<Entry> expList = Arrays.asList(expResult);
         bag.addAll(expList);
         Entry[] result = new Entry[]{};
-        result =  bag.toArray(result);
+        result = bag.toArray(result);
         List<Entry> resList = Arrays.asList(result);
         assertTrue(expList.containsAll(resList) && resList.containsAll(expList));
     }
@@ -192,6 +206,18 @@ public class BagTest {
     }
 
     /**
+     * Test of remove method, of class Bag.
+     */
+    @Test
+    public void testRemoveIfNull() {
+        System.out.println("testRemoveIfNull");
+        bag = exampleBag;
+        bag.add(null);
+        bag.remove(null);
+        assertTrue(bag.containsAll(exampleBag) && bag.size()==exampleBag.size());
+    }
+
+    /**
      * Test of containsAll method, of class Bag.
      */
     @Test
@@ -202,6 +228,19 @@ public class BagTest {
         bag.add(new Entry(555, "line 555"));
         boolean result = bag.containsAll(exampleBag);
         assertTrue(result);
+    }
+
+    /**
+     * Test of containsAll method, of class Bag.
+     */
+    @Test
+    public void testIfNotContainsAny() {
+        System.out.println("testIfNotContainsAny");
+        bag = exampleBag;
+        List<Entry> list = new ArrayList<Entry>();
+        Collections.addAll(list, new Entry(33, "33"), new Entry(44, "44"));
+        boolean result = bag.containsAll(list);
+        assertFalse(result);
     }
 
     /**
@@ -235,35 +274,22 @@ public class BagTest {
     }
 
     /**
-     * Test of retainAll method, of class Bag. 
-     * bag = {Entry{1,"one}, Entry{2, "two}, Entry{3, "three"}} 
-     * col = {Entry{1,"one}, Entry{2, "two}, Entry{1, "two" }} 
-     * bag.retrain(c) ->  bag = {Entry{1,"one}, Entry{2, "two}}
+     * Test of retainAll method, of class Bag. bag = {Entry{1,"one}, Entry{2,
+     * "two}, Entry{3, "three"}} col = {Entry{1,"one}, Entry{2, "two}, Entry{1,
+     * "two" }} bag.retrain(c) -> bag = {Entry{1,"one}, Entry{2, "two}}
      */
     @Test
     public void testRetainAll() {
         System.out.println("testRetainAll");
         Entry e11 = new Entry(1, "one");
-        Entry e22 =   new Entry(2, "two");
+        Entry e22 = new Entry(2, "two");
         Entry e33 = new Entry(3, "three");
         Entry e12 = new Entry(1, "two");
-        Collection<Entry> c = Arrays.asList(e11,e22, e33);
+        Collection<Entry> c = Arrays.asList(e11, e22, e33);
         bag.addAll(c);
         List<Entry> col = Arrays.asList(e11, e12, e22);
         bag.retainAll(col);
-        assertTrue(bag.contains(e11) && bag.contains(e22) && bag.size()==2);
-    }
-
-    /**
-     * Test of retainAll method, of class Bag. bag = {...} c = null
-     * bag.retrain(c) = null
-     */
-    @Test
-    public void testRetainAllIfNull() {
-        System.out.println("testRetainAllIfNull");
-        bag = exampleBag;
-        bag.retainAll(null);
-        assertTrue(bag.isEmpty());
+        assertTrue(bag.contains(e11) && bag.contains(e22) && bag.size() == 2);
     }
 
     /**
@@ -278,5 +304,22 @@ public class BagTest {
         }
         bag.clear();
         assertTrue(bag.size() == 0);
+    }
+    
+    @Test
+    public void testIteratorOnValues(){
+        System.out.println("testIteratorOnValues");
+        bag = exampleBag;
+        bag.add(null);
+        bag.add(null);
+        List<Entry> list = new ArrayList<>(bag.size());
+        System.out.println(bag);
+        Iterator<Entry> it = bag.iterator();
+        while(it.hasNext()){
+            list.add(it.next());
+        }
+        assertTrue(list.size() == bag.size() && list.containsAll(exampleBag) && list.contains(null));
+        
+        
     }
 }

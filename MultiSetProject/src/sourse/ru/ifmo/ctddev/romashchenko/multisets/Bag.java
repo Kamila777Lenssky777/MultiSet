@@ -7,31 +7,35 @@ package sourse.ru.ifmo.ctddev.romashchenko.multisets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
  *
- * @author Андрей
+ * @author I
  */
 public class Bag<E> implements Collection<E> {
 
-    private HashMap<E, List<E>> map;
-    transient int size;
+    private Map<E, List<E>> map;
+    int size;
 
     public Bag() {
         map = new HashMap<>();
     }
 
-    public Bag(Set<? extends E> set) {
+    public Bag(Collection<? extends E> collection) {
         this();
-        addAll(set);
+        addAll(collection);
     }
 
     @Override
@@ -52,29 +56,29 @@ public class Bag<E> implements Collection<E> {
 
     @Override
     public Iterator<E> iterator() {
-        return new BagIterator<>();
+        return new BagIterator();
     }
 
     @Override
     public Object[] toArray() {
-        List<Object> list = new ArrayList<>();
-        for (E k : map.keySet()) {
-            for (E e : map.get(k)) {
-                list.add(e);
-            }
-        }
+        List<Object> list = fillListByElements();
         return list.toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        List<Object> list = new ArrayList<>();
+        List<Object> list = fillListByElements();
+        return list.toArray(a);
+    }
+
+    private List<Object> fillListByElements() {
+        List<Object> list = new ArrayList<>(size);
         for (E k : map.keySet()) {
             for (E e : map.get(k)) {
                 list.add(e);
             }
         }
-        return list.toArray(a);
+        return list;
     }
 
     @Override
@@ -91,8 +95,12 @@ public class Bag<E> implements Collection<E> {
 
     @Override
     public boolean remove(Object o) {
+        int oldsize = size;
         int removedsize = map.get(o).size();
-        return (map.remove(o) != null && (size -= removedsize) >= 0);
+        if (map.remove(o) != null) {
+            size -= removedsize;
+        }
+        return (oldsize != size);
     }
 
     //there is unaware what it should do exactly
@@ -141,32 +149,41 @@ public class Bag<E> implements Collection<E> {
         return "Bag{" + map + '}' + " size = " + size;
     }
 
-    private class BagIterator<E> implements Iterator<E> {
+    private class BagIterator implements Iterator {
 
-        private List<E> listOfEntries;
-        private Iterator<E> bagIterator;
+        private Iterator<E> listIterator;
+        private Iterator<List<E>> mapIterator;
 
         public BagIterator() {
-            E arr[] = (E[])new Object[]{};
-            arr = Bag.this.toArray(arr);
-            listOfEntries = new ArrayList<>(Arrays.asList(arr));
-            bagIterator = listOfEntries.iterator();
-           
+            mapIterator = map.values().iterator();
+            listIterator = Collections.emptyListIterator();
         }
 
         @Override
         public boolean hasNext() {
-            return bagIterator.hasNext();
+            boolean isNextIs = false;;
+            if (listIterator.hasNext()) {
+                return true;
+            } else {
+                if (mapIterator.hasNext()) {
+                    listIterator = mapIterator.next().listIterator();
+                    return hasNext();
+                } else {
+                    return false;
+                }
+            }
         }
 
         @Override
         public E next() {
-            return bagIterator.next();
+            hasNext();
+            return listIterator.next();
         }
 
         @Override
         public void remove() {
-            bagIterator.remove();
+            mapIterator.remove();
+            listIterator = Collections.emptyListIterator();
         }
     }
 }

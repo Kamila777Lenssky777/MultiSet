@@ -23,7 +23,27 @@ import sourse.ru.ifmo.ctddev.romashchenko.multisets.Bag;
 public class MultiSetProject {
 
     public static void main(String[] args) {
+        Iterator<Integer> it;
+        Bag<Integer> bag = new Bag<Integer>();
+        Collections.addAll(bag, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 4, 4, 4, null);
+        it = bag.iterator();
+        while (it.hasNext()) {
+            Integer e = it.next();
+            System.out.print("\n" + e + "\t");
+            if (e != null && e % 2 == 0) {
+                it.remove();
+                System.out.print(" has beem removed");
+            }
+        }
 
+        System.out.println("\ndump");
+        it = bag.iterator();
+        while (it.hasNext()) {
+            Integer e = it.next();
+            System.out.println(e);
+        }
+        bag.remove(null);
+        System.out.println(bag);
 
     }
 }
