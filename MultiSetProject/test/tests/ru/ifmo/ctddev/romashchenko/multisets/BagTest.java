@@ -172,7 +172,7 @@ public class BagTest {
         bag.addAll(expList);
         Object[] result = bag.toArray();
         List<Object> resList = Arrays.asList(result);
-        assertTrue(expList.containsAll(resList) && resList.containsAll(expList));
+        assertTrue(expList.containsAll(resList) && resList.containsAll(expList) && resList.size() == expList.size());
     }
 
     /**
@@ -188,7 +188,7 @@ public class BagTest {
         Entry[] result = new Entry[]{};
         result = bag.toArray(result);
         List<Entry> resList = Arrays.asList(result);
-        assertTrue(expList.containsAll(resList) && resList.containsAll(expList));
+        assertTrue(expList.containsAll(resList) && resList.containsAll(expList) && resList.size() == expList.size());
     }
 
     /**
@@ -214,7 +214,7 @@ public class BagTest {
         bag = exampleBag;
         bag.add(null);
         bag.remove(null);
-        assertTrue(bag.containsAll(exampleBag) && bag.size()==exampleBag.size());
+        assertTrue(bag.containsAll(exampleBag) && bag.size() == exampleBag.size());
     }
 
     /**
@@ -268,9 +268,11 @@ public class BagTest {
     public void testRemoveAll() {
         System.out.println("testRemoveAll");
         Collection<Entry> c = Arrays.asList(new Entry(1, "one"), new Entry(1, "two"), new Entry(2, "two"));
+        Entry e7 = new Entry(777, "777");
         bag.addAll(c);
+        bag.add(e7);
         bag.removeAll(c);
-        assertTrue(bag.isEmpty());
+        assertTrue(bag.contains(e7) && bag.size() == 1);
     }
 
     /**
@@ -305,9 +307,13 @@ public class BagTest {
         bag.clear();
         assertTrue(bag.size() == 0);
     }
-    
+
+    /**
+     * Test of iterator method, of class Bag.
+     *
+     */
     @Test
-    public void testIteratorOnValues(){
+    public void testIteratorOnValues() {
         System.out.println("testIteratorOnValues");
         bag = exampleBag;
         bag.add(null);
@@ -315,11 +321,51 @@ public class BagTest {
         List<Entry> list = new ArrayList<>(bag.size());
         System.out.println(bag);
         Iterator<Entry> it = bag.iterator();
-        while(it.hasNext()){
+        while (it.hasNext()) {
             list.add(it.next());
         }
         assertTrue(list.size() == bag.size() && list.containsAll(exampleBag) && list.contains(null));
-        
-        
+
+
+    }
+
+    /**
+     * Test of iterator method, of class Bag.
+     */
+    @Test
+    public void testIteratorOnGroupingValues() {
+        System.out.println("testIteratorOnGroupingValues");
+        Entry e11 = new Entry(1, "one");
+        Entry e22 = new Entry(2, "two");
+        Entry e33 = new Entry(3, "three");
+        Entry e12 = new Entry(1, "two");
+        bag.add(null);
+        bag.add(null);
+        bag.add(e11);
+        bag.add(e11);
+        bag.add(e12);
+        bag.add(e22);
+        bag.add(e33);
+        bag.add(e33);
+        List<Entry> list = new ArrayList<>(bag.size());
+        Iterator<Entry> it = bag.iterator();
+        while (it.hasNext()) {
+            list.add(it.next());
+        }
+        boolean result = (list.size() == bag.size());
+        result &= (list.get(0) == null);
+        result &= (list.get(1) == null);
+        result &= (list.get(2).equals(e12));
+        result &= (list.get(3).equals(e11));
+        result &= (list.get(4).equals(e11));
+        result &= (list.get(5).equals(e22));
+        result &= (list.get(6).equals(e33));
+        result &= (list.get(7).equals(e33));
+        assertTrue(result);
+    }
+
+    @Test
+    public void testNullRemove() {
+        assertFalse(bag.remove(new Entry(777, "zzz")));
     }
 }

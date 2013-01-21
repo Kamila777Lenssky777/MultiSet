@@ -95,12 +95,14 @@ public class Bag<E> implements Collection<E> {
 
     @Override
     public boolean remove(Object o) {
-        int oldsize = size;
-        int removedsize = map.get(o).size();
-        if (map.remove(o) != null) {
-            size -= removedsize;
+        List<E> onremove = map.get(o);
+        if (onremove == null) {
+            return false;
         }
-        return (oldsize != size);
+        int removedsize = onremove.size();
+        map.remove(o);
+        size -= removedsize;
+        return (removedsize>0);
     }
 
     //there is unaware what it should do exactly
@@ -180,6 +182,7 @@ public class Bag<E> implements Collection<E> {
             return listIterator.next();
         }
 
+        //removes all objects that similar to current
         @Override
         public void remove() {
             mapIterator.remove();

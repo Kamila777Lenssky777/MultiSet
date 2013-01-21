@@ -35,7 +35,6 @@ public class MultiSetProject {
                 System.out.print(" has beem removed");
             }
         }
-
         System.out.println("\ndump");
         it = bag.iterator();
         while (it.hasNext()) {
@@ -44,6 +43,8 @@ public class MultiSetProject {
         }
         bag.remove(null);
         System.out.println(bag);
+        
+        bag.remove(11111);
 
     }
 }
