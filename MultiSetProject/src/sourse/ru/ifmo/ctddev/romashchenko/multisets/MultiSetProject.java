@@ -33,8 +33,11 @@ public class MultiSetProject {
             if (e != null && e % 2 == 0) {
                 it.remove();
                 System.out.print(" has beem removed");
+                
             }
         }
+        System.out.println(bag);
+        System.out.println(bag.contains(2));
         System.out.println("\ndump");
         it = bag.iterator();
         while (it.hasNext()) {
@@ -45,6 +48,7 @@ public class MultiSetProject {
         System.out.println(bag);
         
         bag.remove(11111);
-
+        
+        
     }
 }

@@ -102,7 +102,7 @@ public class Bag<E> implements Collection<E> {
         int removedsize = onremove.size();
         map.remove(o);
         size -= removedsize;
-        return (removedsize>0);
+        return (removedsize > 0);
     }
 
     //there is unaware what it should do exactly
@@ -155,6 +155,7 @@ public class Bag<E> implements Collection<E> {
 
         private Iterator<E> listIterator;
         private Iterator<List<E>> mapIterator;
+        private List<E> currentList;
 
         public BagIterator() {
             mapIterator = map.values().iterator();
@@ -168,25 +169,29 @@ public class Bag<E> implements Collection<E> {
                 return true;
             } else {
                 if (mapIterator.hasNext()) {
-                    listIterator = mapIterator.next().listIterator();
+                    currentList = mapIterator.next();
+                    listIterator = currentList.listIterator();
                     return hasNext();
                 } else {
                     return false;
                 }
             }
         }
-
+        
         @Override
         public E next() {
             hasNext();
             return listIterator.next();
         }
 
-        //removes all objects that similar to current
         @Override
         public void remove() {
-            mapIterator.remove();
-            listIterator = Collections.emptyListIterator();
+            listIterator.remove();
+            size--;
+            //checking on empty list
+            if(currentList!=null && currentList.isEmpty()){
+                mapIterator.remove();
+            }
         }
     }
 }
