@@ -26,30 +26,30 @@ import static org.junit.Assert.*;
  * @author I
  */
 public class BagTest {
-
+    
     public static class Entry {
-
+        
         Integer number = 0;
         String name = "zero line";
-
+        
         public Entry() {
         }
-
+        
         public Entry(Integer number, String name) {
             this.number = number;
             this.name = name;
         }
-
+        
         @Override
         public String toString() {
             return "Entry{" + "number=" + number + ", name=" + name + '}';
         }
-
+        
         @Override
         public int hashCode() {
             return Objects.hashCode(this.number);
         }
-
+        
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof Entry) {
@@ -61,7 +61,7 @@ public class BagTest {
     }
     private static Bag<Entry> bag;
     private static Bag<Entry> exampleBag = new Bag<>();
-
+    
     @BeforeClass
     public static void init() {
         System.out.println("before class");
@@ -71,7 +71,7 @@ public class BagTest {
             }
         }
     }
-
+    
     @Before
     public void tearUp() {
         bag = new Bag<>();
@@ -130,9 +130,10 @@ public class BagTest {
         Entry e2 = new Entry(1, "two");
         bag.add(e1);
         bag.add(e2);
-        assertTrue(bag.contains(e1) && bag.contains(e2));
+        assertTrue(bag.contains(e1));
+        assertTrue(bag.contains(e2));
     }
-
+    
     @Test
     public void testIfNotContains() {
         System.out.println("testIfNotContains");
@@ -150,7 +151,7 @@ public class BagTest {
         Iterator result = bag.iterator();
         assertTrue(result != null);
     }
-
+    
     @Test(expected = ConcurrentModificationException.class)
     public void testIteratorOnModificationException() {
         System.out.println("testIteratorOnModificationException");
@@ -188,7 +189,9 @@ public class BagTest {
         Entry[] result = new Entry[]{};
         result = bag.toArray(result);
         List<Entry> resList = Arrays.asList(result);
-        assertTrue(expList.containsAll(resList) && resList.containsAll(expList) && resList.size() == expList.size());
+        assertTrue(expList.containsAll(resList));
+        assertTrue(resList.containsAll(expList));
+        assertTrue(resList.size() == expList.size());
     }
 
     /**
@@ -202,7 +205,8 @@ public class BagTest {
         bag.add(e1);
         bag.add(e2);
         bag.remove(e1);
-        assertTrue(!bag.contains(e1) && bag.contains(e2));
+        assertTrue(!bag.contains(e1));
+        assertTrue(bag.contains(e2));
     }
 
     /**
@@ -214,7 +218,8 @@ public class BagTest {
         bag = exampleBag;
         bag.add(null);
         bag.remove(null);
-        assertTrue(bag.containsAll(exampleBag) && bag.size() == exampleBag.size());
+        assertTrue(bag.containsAll(exampleBag));
+        assertTrue(bag.size() == exampleBag.size());
     }
 
     /**
@@ -272,7 +277,8 @@ public class BagTest {
         bag.addAll(c);
         bag.add(e7);
         bag.removeAll(c);
-        assertTrue(bag.contains(e7) && bag.size() == 1);
+        assertTrue(bag.contains(e7));
+        assertTrue(bag.size() == 1);
     }
 
     /**
@@ -287,11 +293,13 @@ public class BagTest {
         Entry e22 = new Entry(2, "two");
         Entry e33 = new Entry(3, "three");
         Entry e12 = new Entry(1, "two");
-        Collection<Entry> c = Arrays.asList(e11, e22, e33);
+        Collection<Entry> c = Arrays.asList(e11, e22, e33, e33);
         bag.addAll(c);
         List<Entry> col = Arrays.asList(e11, e12, e22);
         bag.retainAll(col);
-        assertTrue(bag.contains(e11) && bag.contains(e22) && bag.size() == 2);
+        assertTrue(bag.contains(e11));
+        assertTrue(bag.contains(e22));
+        assertTrue(bag.size() == 2);
     }
 
     /**
@@ -324,9 +332,9 @@ public class BagTest {
         while (it.hasNext()) {
             list.add(it.next());
         }
-        assertTrue(list.size() == bag.size() && list.containsAll(exampleBag) && list.contains(null));
-
-
+        assertTrue(list.size() == bag.size());
+        assertTrue(list.containsAll(exampleBag));
+        assertTrue(list.contains(null));
     }
 
     /**
@@ -335,35 +343,35 @@ public class BagTest {
     @Test
     public void testIteratorOnGroupingValues() {
         System.out.println("testIteratorOnGroupingValues");
-        Entry e11 = new Entry(1, "one");
-        Entry e22 = new Entry(2, "two");
-        Entry e33 = new Entry(3, "three");
-        Entry e12 = new Entry(1, "two");
-        bag.add(null);
-        bag.add(null);
-        bag.add(e11);
-        bag.add(e11);
-        bag.add(e12);
-        bag.add(e22);
-        bag.add(e33);
-        bag.add(e33);
-        List<Entry> list = new ArrayList<>(bag.size());
-        Iterator<Entry> it = bag.iterator();
+        Bag<Integer> bagOfInteger = new Bag<>();
+        bagOfInteger.add(null);         //null - 2 times
+        bagOfInteger.add(null);         //1    - 3 times
+        bagOfInteger.add(1);            //2    - 2 times
+        bagOfInteger.add(2);            //3    - 1 
+        bagOfInteger.add(1);
+        bagOfInteger.add(2);
+        bagOfInteger.add(3);
+        bagOfInteger.add(1);
+        List<Integer> list = new ArrayList<>(bagOfInteger.size());
+        Iterator<Integer> it = bagOfInteger.iterator();
         while (it.hasNext()) {
             list.add(it.next());
         }
-        boolean result = (list.size() == bag.size());
-        result &= (list.get(0) == null);
-        result &= (list.get(1) == null);
-        result &= (list.get(2).equals(e12));
-        result &= (list.get(3).equals(e11));
-        result &= (list.get(4).equals(e11));
-        result &= (list.get(5).equals(e22));
-        result &= (list.get(6).equals(e33));
-        result &= (list.get(7).equals(e33));
-        assertTrue(result);
+        int indexOfNull = list.indexOf(null);
+        int indexOfOne = list.indexOf(1);
+        int indexOfTwo = list.indexOf(2);
+        int indexOfThree = list.indexOf(3);
+        assertTrue(list.size() == bagOfInteger.size());
+        assertTrue(indexOfNull != -1);                          //bag contains null
+        assertTrue(list.get(indexOfNull + 1) == null);          //second null
+        assertTrue(indexOfOne != -1);                           //bag contains 1
+        assertTrue(list.get(indexOfOne + 1).equals(1));         //second 1
+        assertTrue(list.get(indexOfOne + 2).equals(1));         //third 1
+        assertTrue(indexOfTwo != -1);                           //bag contains 2
+        assertTrue(list.get(indexOfTwo + 1).equals(2));         //second 2
+        assertTrue(indexOfThree != -1);                         //bag contains 3
     }
-
+    
     @Test
     public void testNullRemove() {
         assertFalse(bag.remove(new Entry(777, "zzz")));

@@ -113,31 +113,33 @@ public class Bag<E> implements Collection<E> {
 
     @Override
     public boolean addAll(Collection<? extends E> c) {
-        int oldsize = size;
+        int oldSize = size;
         for (E e : c) {
             add(e);
         }
-        return size() != oldsize;
+        return size() != oldSize;
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        int oldsize = size;
+        int oldSize = size;
         for (Object e : c) {
             remove(e);
         }
-        return oldsize != size;
+        return oldSize != size;
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        int oldsize = size;
-        for (E e : map.keySet()) {
-            if (!c.contains(e)) {
-                remove(e);
+        int oldSize = size;
+        for (Iterator<E> iterator = (Iterator<E>) map.entrySet().iterator(); iterator.hasNext();) {
+            Entry<E, List<E>> next = (Entry<E, List<E>>) iterator.next();
+            if (!c.contains(next.getKey())) {
+                iterator.remove();
+                size -= next.getValue().size();
             }
         }
-        return size != oldsize;
+        return size != oldSize;
     }
 
     @Override
@@ -177,7 +179,7 @@ public class Bag<E> implements Collection<E> {
                 }
             }
         }
-        
+
         @Override
         public E next() {
             hasNext();
@@ -189,7 +191,7 @@ public class Bag<E> implements Collection<E> {
             listIterator.remove();
             size--;
             //checking on empty list
-            if(currentList!=null && currentList.isEmpty()){
+            if (currentList != null && currentList.isEmpty()) {
                 mapIterator.remove();
             }
         }
